@@ -113,8 +113,10 @@ if page == "Historial":
                 f"{predicted_class} | {confidence * 100:.0f}%"
             )
 
-            if image_path:
+            if image_path and os.path.exists(image_path):
                 st.image(image_path, width=150)
+            else:
+                st.warning("Imagen no disponible en el servidor.")
 
             st.divider()
 
