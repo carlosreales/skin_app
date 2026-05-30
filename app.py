@@ -4,7 +4,8 @@ import os
 from datetime import datetime
 import pandas as pd
 
-from predictor import predict_mock
+from predictor import predict
+
 from recommendations import RECOMMENDATIONS
 from database import create_tables, save_analysis, get_analysis_history
 from face_detector import detect_face
@@ -66,7 +67,7 @@ if page == "Analizar imagen":
                 st.error("No se detectó un rostro en la imagen.")
 
             else:
-                result = predict_mock(image)
+                result = predict(image)
 
                 predicted_class = result["class"]
                 confidence = result["confidence"]
