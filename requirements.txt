@@ -3,3 +3,6 @@ pillow
 numpy
 pandas
 opencv-python-headless
+ultralytics
+torch
+torchvision

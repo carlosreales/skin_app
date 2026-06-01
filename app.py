@@ -5,10 +5,37 @@ from datetime import datetime
 import pandas as pd
 
 from predictor import predict
-
 from recommendations import RECOMMENDATIONS
-from database import create_tables, save_analysis, get_analysis_history
+from database import create_tables, save_analysis, get_analysis_history, delete_all_analysis
 from face_detector import detect_face
+
+
+DESCRIPTIONS = {
+    "acne": "Se detectaron características compatibles con acné facial.",
+    "dark circle": "Se detectaron ojeras visibles alrededor de los ojos.",
+    "darkspot": "Se identificaron manchas o hiperpigmentación facial.",
+    "dry": "La piel presenta signos visibles de resequedad.",
+    "normal skin": "La piel presenta características compatibles con una piel saludable y equilibrada.",
+    "oily": "Se detectaron características asociadas a piel grasa.",
+    "wrinkle": "Se identificaron líneas de expresión o arrugas."
+}
+
+
+def get_severity(confidence):
+    if confidence < 0.50:
+        return "Baja"
+    elif confidence < 0.80:
+        return "Media"
+    else:
+        return "Alta"
+    
+def delete_uploads_folder():
+    if os.path.exists("uploads"):
+        for filename in os.listdir("uploads"):
+            file_path = os.path.join("uploads", filename)
+
+            if os.path.isfile(file_path):
+                os.remove(file_path)
 
 
 st.set_page_config(
@@ -72,6 +99,13 @@ if page == "Analizar imagen":
                 predicted_class = result["class"]
                 confidence = result["confidence"]
 
+                severity = get_severity(confidence)
+
+                description = DESCRIPTIONS.get(
+                    predicted_class,
+                    "No hay descripción disponible."
+                )
+
                 os.makedirs("uploads", exist_ok=True)
 
                 image_filename = datetime.now().strftime("%Y%m%d_%H%M%S") + ".jpg"
@@ -79,21 +113,63 @@ if page == "Analizar imagen":
 
                 image.save(image_path)
 
-                save_analysis(predicted_class, confidence, image_path)
+                save_analysis(
+                    predicted_class,
+                    confidence,
+                    image_path,
+                    severity,
+                    description
+                )
 
-                st.subheader("Resultado")
-                st.write(f"**Condición detectada:** {predicted_class}")
-                st.write(f"**Confianza:** {confidence * 100:.0f}%")
+                st.divider()
+
+                if predicted_class == "normal skin":
+                    st.success("🟢 Piel Normal Detectada")
+
+                elif predicted_class == "acne":
+                    st.warning("🟠 Acné Detectado")
+
+                elif predicted_class == "dark circle":
+                    st.warning("🟤 Ojeras Detectadas")
+
+                elif predicted_class == "darkspot":
+                    st.warning("🟤 Manchas Detectadas")
+
+                elif predicted_class == "dry":
+                    st.warning("🟡 Piel Seca Detectada")
+
+                elif predicted_class == "oily":
+                    st.warning("🟠 Piel Grasa Detectada")
+
+                elif predicted_class == "wrinkle":
+                    st.info("🔵 Arrugas Detectadas")
+
+                else:
+                    st.info(f"Resultado: {predicted_class}")
+
+                col1, col2 = st.columns(2)
+
+                col1.metric("Confianza", f"{confidence * 100:.0f}%")
+                col2.metric("Severidad", severity)
+
+                st.write("Nivel de confianza")
+                st.progress(float(confidence))
+
+                st.subheader("Interpretación")
+                st.info(description)
 
                 st.subheader("Recomendaciones")
 
-                recommendations = RECOMMENDATIONS.get(predicted_class, [])
+                recommendations = RECOMMENDATIONS.get(
+                    predicted_class,
+                    []
+                )
 
                 for item in recommendations:
-                    st.write(f"- {item}")
+                    st.write(f"✅ {item}")
 
-                st.info(
-                    "Para una evaluación precisa, consulta con un dermatólogo o profesional de la salud."
+                st.warning(
+                    "Esta información es orientativa y no reemplaza una valoración médica profesional."
                 )
 
 
@@ -101,23 +177,43 @@ if page == "Historial":
 
     st.subheader("Historial de análisis")
 
+    st.warning("Esta acción eliminará todos los análisis guardados y las imágenes locales.")
+
+    confirm_delete = st.checkbox("Confirmo que deseo eliminar todo el historial")
+
+    if st.button("Eliminar historial completo"):
+        if confirm_delete:
+            delete_all_analysis()
+            delete_uploads_folder()
+            st.success("Historial e imágenes eliminados correctamente.")
+            st.rerun()
+        else:
+            st.error("Debes marcar la confirmación antes de eliminar.")
+
     history = get_analysis_history()
 
     if len(history) == 0:
         st.write("Todavía no hay análisis guardados.")
     else:
         for row in history:
-            analysis_id, analysis_date, predicted_class, confidence, image_path = row
+            analysis_id, analysis_date, predicted_class, confidence, image_path, severity, description = row
 
-            st.write(
-                f"**#{analysis_id}** | {analysis_date} | "
-                f"{predicted_class} | {confidence * 100:.0f}%"
-            )
+            st.write(f"### Análisis #{analysis_id}")
+            st.write(f"**Fecha:** {analysis_date}")
 
-            if image_path and os.path.exists(image_path):
-                st.image(image_path, width=150)
-            else:
-                st.warning("Imagen no disponible en el servidor.")
+            col1, col2 = st.columns([1, 2])
+
+            with col1:
+                if image_path and os.path.exists(image_path):
+                    st.image(image_path, width=160)
+                else:
+                    st.warning("Imagen no disponible.")
+
+            with col2:
+                st.write(f"**Condición detectada:** {predicted_class}")
+                st.write(f"**Confianza:** {confidence * 100:.0f}%")
+                st.write(f"**Severidad:** {severity}")
+                st.write(f"**Interpretación:** {description}")
 
             st.divider()
 
@@ -138,7 +234,9 @@ if page == "Estadísticas":
                 "analysis_date",
                 "predicted_class",
                 "confidence",
-                "image_path"
+                "image_path",
+                "severity",
+                "description"
             ]
         )
 
@@ -153,7 +251,24 @@ if page == "Estadísticas":
         col3.metric("Clase más frecuente", most_common_class)
 
         st.subheader("Distribución de clases detectadas")
-
         class_counts = df["predicted_class"].value_counts()
-
         st.bar_chart(class_counts)
+
+        st.subheader("Distribución por severidad")
+        severity_counts = df["severity"].value_counts()
+        st.bar_chart(severity_counts)
+
+        st.subheader("Tabla de análisis")
+
+        st.dataframe(
+            df[
+                [
+                    "id",
+                    "analysis_date",
+                    "predicted_class",
+                    "confidence",
+                    "severity"
+                ]
+            ],
+            use_container_width=True
+        )

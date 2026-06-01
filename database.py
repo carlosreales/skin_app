@@ -19,7 +19,10 @@ def create_tables():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             analysis_date TEXT,
             predicted_class TEXT,
-            confidence REAL
+            confidence REAL,
+            image_path TEXT,
+            severity TEXT,
+            description TEXT
         )
     """)
 
@@ -27,15 +30,19 @@ def create_tables():
     columns = [column[1] for column in cursor.fetchall()]
 
     if "image_path" not in columns:
-        cursor.execute("""
-            ALTER TABLE skin_analysis
-            ADD COLUMN image_path TEXT
-        """)
+        cursor.execute("ALTER TABLE skin_analysis ADD COLUMN image_path TEXT")
+
+    if "severity" not in columns:
+        cursor.execute("ALTER TABLE skin_analysis ADD COLUMN severity TEXT")
+
+    if "description" not in columns:
+        cursor.execute("ALTER TABLE skin_analysis ADD COLUMN description TEXT")
 
     connection.commit()
     connection.close()
 
-def save_analysis(predicted_class, confidence, image_path):
+
+def save_analysis(predicted_class, confidence, image_path, severity, description):
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -44,14 +51,18 @@ def save_analysis(predicted_class, confidence, image_path):
             analysis_date,
             predicted_class,
             confidence,
-            image_path
+            image_path,
+            severity,
+            description
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?)
     """, (
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         predicted_class,
         confidence,
-        image_path
+        image_path,
+        severity,
+        description
     ))
 
     connection.commit()
@@ -68,7 +79,9 @@ def get_analysis_history():
             analysis_date,
             predicted_class,
             confidence,
-            image_path
+            image_path,
+            severity,
+            description
         FROM skin_analysis
         ORDER BY id DESC
     """)
@@ -77,3 +90,12 @@ def get_analysis_history():
     connection.close()
 
     return rows
+
+def delete_all_analysis():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("DELETE FROM skin_analysis")
+
+    connection.commit()
+    connection.close()
