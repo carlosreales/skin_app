@@ -123,13 +123,22 @@ if page == "Analizar imagen":
 
                 os.makedirs("uploads", exist_ok=True)
 
-                image_filename = datetime.now().strftime("%Y%m%d_%H%M%S") + ".jpg"
-                image_path = os.path.join("uploads", image_filename)
+                image_filename = (
+                    datetime.now().strftime("%Y%m%d_%H%M%S")
+                    + ".jpg"
+                )
+
+                image_path = os.path.join(
+                    "uploads",
+                    image_filename
+                )
 
                 image_to_save = image.convert("RGB")
-                image_to_save.save(image_path, format="JPEG")
 
-                image.save(image_path)
+                image_to_save.save(
+                    image_path,
+                    "JPEG"
+                )
 
                 save_analysis(
                     predicted_class,
