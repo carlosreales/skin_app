@@ -39,14 +39,14 @@ def delete_uploads_folder():
 
 
 st.set_page_config(
-    page_title="Skin AI Demo",
+    page_title="SkinDo",
     page_icon="🧴",
     layout="centered"
 )
 
 create_tables()
 
-st.title("Skin AI Demo")
+st.title("SkinDo")
 st.write("Analiza una imagen del rostro y entrega recomendaciones generales según la condición detectada.")
 
 st.warning(
@@ -125,6 +125,9 @@ if page == "Analizar imagen":
 
                 image_filename = datetime.now().strftime("%Y%m%d_%H%M%S") + ".jpg"
                 image_path = os.path.join("uploads", image_filename)
+
+                image_to_save = image.convert("RGB")
+                image_to_save.save(image_path, format="JPEG")
 
                 image.save(image_path)
 
