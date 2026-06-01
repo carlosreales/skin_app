@@ -98,6 +98,21 @@ if page == "Analizar imagen":
 
                 predicted_class = result["class"]
                 confidence = result["confidence"]
+                detections = result.get("detections", [])
+
+                st.subheader("Detecciones del modelo")
+
+                if len(detections) == 0:
+                    st.warning(
+                        "El modelo no detectó ninguna imperfección con el umbral actual."
+                    )
+                else:
+                    for detection in detections:
+                        st.write(
+                            f"**{detection['class']}** - "
+                            f"{detection['confidence'] * 100:.0f}%"
+                        )
+                        st.progress(detection["confidence"])
 
                 severity = get_severity(confidence)
 
