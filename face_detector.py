@@ -4,6 +4,9 @@ import numpy as np
 
 def detect_face(pil_image):
 
+    # Convertir cualquier imagen a RGB
+    pil_image = pil_image.convert("RGB")
+
     image = np.array(pil_image)
 
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
