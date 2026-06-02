@@ -63,14 +63,14 @@ def delete_uploads_folder():
 
 
 st.set_page_config(
-    page_title="Skin AI Demo",
+    page_title="SkinDo",
     page_icon="🧴",
     layout="centered"
 )
 
 create_tables()
 
-st.title("Skin AI Demo")
+st.title("SkinDo")
 st.write("Aplicación demo para detectar imperfecciones faciales en imágenes.")
 
 st.warning(
