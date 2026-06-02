@@ -22,7 +22,8 @@ def create_tables():
             confidence REAL,
             image_path TEXT,
             severity TEXT,
-            description TEXT
+            description TEXT,
+            cloudinary_public_id TEXT
         )
     """)
 
@@ -38,11 +39,21 @@ def create_tables():
     if "description" not in columns:
         cursor.execute("ALTER TABLE skin_analysis ADD COLUMN description TEXT")
 
+    if "cloudinary_public_id" not in columns:
+        cursor.execute("ALTER TABLE skin_analysis ADD COLUMN cloudinary_public_id TEXT")
+
     connection.commit()
     connection.close()
 
 
-def save_analysis(predicted_class, confidence, image_path, severity, description):
+def save_analysis(
+    predicted_class,
+    confidence,
+    image_path,
+    severity,
+    description,
+    cloudinary_public_id
+):
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -53,16 +64,18 @@ def save_analysis(predicted_class, confidence, image_path, severity, description
             confidence,
             image_path,
             severity,
-            description
+            description,
+            cloudinary_public_id
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         predicted_class,
         confidence,
         image_path,
         severity,
-        description
+        description,
+        cloudinary_public_id
     ))
 
     connection.commit()
@@ -81,7 +94,8 @@ def get_analysis_history():
             confidence,
             image_path,
             severity,
-            description
+            description,
+            cloudinary_public_id
         FROM skin_analysis
         ORDER BY id DESC
     """)
@@ -90,6 +104,7 @@ def get_analysis_history():
     connection.close()
 
     return rows
+
 
 def delete_all_analysis():
     connection = get_connection()

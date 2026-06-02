@@ -3,6 +3,7 @@ from PIL import Image
 import os
 from datetime import datetime
 import pandas as pd
+from cloud_storage import upload_image_to_cloudinary, delete_image_from_cloudinary
 
 from predictor import predict
 from recommendations import RECOMMENDATIONS
@@ -147,12 +148,18 @@ if page == "Analizar imagen":
                     "JPEG"
                 )
 
+                cloudinary_result = upload_image_to_cloudinary(image_path)
+
+                cloud_image_url = cloudinary_result["secure_url"]
+                cloudinary_public_id = cloudinary_result["public_id"]
+
                 save_analysis(
                     predicted_class,
                     confidence,
-                    image_path,
+                    cloud_image_url,
                     severity,
-                    description
+                    description,
+                    cloudinary_public_id
                 )
 
                 st.divider()
@@ -278,10 +285,21 @@ if page == "Historial":
 
     if st.button("Eliminar historial completo"):
         if confirm_delete:
+
+            history_to_delete = get_analysis_history()
+
+            for row in history_to_delete:
+                cloudinary_public_id = row[7]
+
+                if cloudinary_public_id:
+                    delete_image_from_cloudinary(cloudinary_public_id)
+
             delete_all_analysis()
             delete_uploads_folder()
-            st.success("Historial e imágenes eliminados correctamente.")
+
+            st.success("Historial, imágenes locales e imágenes de Cloudinary eliminados correctamente.")
             st.rerun()
+
         else:
             st.error("Debes marcar la confirmación antes de eliminar.")
 
@@ -293,7 +311,7 @@ if page == "Historial":
         st.write("Todavía no hay análisis guardados.")
     else:
         for row in history:
-            analysis_id, analysis_date, predicted_class, confidence, image_path, severity, description = row
+            analysis_id, analysis_date, predicted_class, confidence, image_path, severity, description, cloudinary_public_id = row
 
             st.write(f"### Análisis #{analysis_id}")
             st.write(f"**Fecha:** {analysis_date}")
@@ -301,7 +319,7 @@ if page == "Historial":
             col1, col2 = st.columns([1, 2])
 
             with col1:
-                if image_path and os.path.exists(image_path):
+                if image_path:
                     st.image(image_path, width=160)
                 else:
                     st.warning("Imagen no disponible.")
@@ -333,7 +351,8 @@ if page == "Estadísticas":
                 "confidence",
                 "image_path",
                 "severity",
-                "description"
+                "description",
+                "cloudinary_public_id"
             ]
         )
 
