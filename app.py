@@ -17,18 +17,37 @@ DESCRIPTIONS = {
     "dry": "La piel presenta signos visibles de resequedad.",
     "normal skin": "La piel presenta características compatibles con una piel saludable y equilibrada.",
     "oily": "Se detectaron características asociadas a piel grasa.",
-    "wrinkle": "Se identificaron líneas de expresión o arrugas."
+    "wrinkle": "Se identificaron líneas de expresión o arrugas.",
+    "Sin detección": "El modelo no detectó imperfecciones con el umbral de confianza actual."
 }
 
 
 def get_severity(confidence):
-    if confidence < 0.50:
+    if confidence == 0:
+        return "No aplica"
+    elif confidence < 0.50:
         return "Baja"
     elif confidence < 0.80:
         return "Media"
     else:
         return "Alta"
-    
+
+
+def get_display_name(predicted_class):
+    names = {
+        "acne": "Acné",
+        "dark circle": "Ojeras",
+        "darkspot": "Manchas",
+        "dry": "Piel seca",
+        "normal skin": "Piel normal",
+        "oily": "Piel grasa",
+        "wrinkle": "Arrugas",
+        "Sin detección": "Sin detección"
+    }
+
+    return names.get(predicted_class, predicted_class)
+
+
 def delete_uploads_folder():
     if os.path.exists("uploads"):
         for filename in os.listdir("uploads"):
@@ -39,15 +58,15 @@ def delete_uploads_folder():
 
 
 st.set_page_config(
-    page_title="SkinDo",
+    page_title="Skin AI Demo",
     page_icon="🧴",
     layout="centered"
 )
 
 create_tables()
 
-st.title("SkinDo")
-st.write("Analiza una imagen del rostro y entrega recomendaciones generales según la condición detectada.")
+st.title("Skin AI Demo")
+st.write("Aplicación demo para detectar imperfecciones faciales en imágenes.")
 
 st.warning(
     "Esta herramienta es solo orientativa y no reemplaza una valoración médica o dermatológica."
@@ -90,6 +109,8 @@ if page == "Analizar imagen":
 
         if st.button("Analizar imagen"):
 
+            image = image.convert("RGB")
+
             if not detect_face(image):
                 st.error("No se detectó un rostro en la imagen.")
 
@@ -99,20 +120,6 @@ if page == "Analizar imagen":
                 predicted_class = result["class"]
                 confidence = result["confidence"]
                 detections = result.get("detections", [])
-
-                st.subheader("Detecciones del modelo")
-
-                if len(detections) == 0:
-                    st.warning(
-                        "El modelo no detectó ninguna imperfección con el umbral actual."
-                    )
-                else:
-                    for detection in detections:
-                        st.write(
-                            f"**{detection['class']}** - "
-                            f"{detection['confidence'] * 100:.0f}%"
-                        )
-                        st.progress(detection["confidence"])
 
                 severity = get_severity(confidence)
 
@@ -150,40 +157,98 @@ if page == "Analizar imagen":
 
                 st.divider()
 
-                if predicted_class == "normal skin":
-                    st.success("🟢 Piel Normal Detectada")
+                display_name = get_display_name(predicted_class)
+
+                if predicted_class == "Sin detección":
+                    st.warning("⚪ El modelo no detectó imperfecciones relevantes")
+
+                elif predicted_class == "normal skin":
+                    st.success("🟢 Resultado principal: Piel normal")
 
                 elif predicted_class == "acne":
-                    st.warning("🟠 Acné Detectado")
+                    st.warning("🟠 Resultado principal: Acné")
 
                 elif predicted_class == "dark circle":
-                    st.warning("🟤 Ojeras Detectadas")
+                    st.warning("🟤 Resultado principal: Ojeras")
 
                 elif predicted_class == "darkspot":
-                    st.warning("🟤 Manchas Detectadas")
+                    st.warning("🟤 Resultado principal: Manchas")
 
                 elif predicted_class == "dry":
-                    st.warning("🟡 Piel Seca Detectada")
+                    st.warning("🟡 Resultado principal: Piel seca")
 
                 elif predicted_class == "oily":
-                    st.warning("🟠 Piel Grasa Detectada")
+                    st.warning("🟠 Resultado principal: Piel grasa")
 
                 elif predicted_class == "wrinkle":
-                    st.info("🔵 Arrugas Detectadas")
+                    st.info("🔵 Resultado principal: Arrugas")
 
                 else:
-                    st.info(f"Resultado: {predicted_class}")
+                    st.info(f"Resultado principal: {display_name}")
 
-                col1, col2 = st.columns(2)
+                col1, col2, col3 = st.columns(3)
 
-                col1.metric("Confianza", f"{confidence * 100:.0f}%")
-                col2.metric("Severidad", severity)
+                col1.metric(
+                    "Resultado",
+                    display_name
+                )
 
-                st.write("Nivel de confianza")
+                col2.metric(
+                    "Confianza",
+                    f"{confidence * 100:.0f}%"
+                )
+
+                col3.metric(
+                    "Severidad",
+                    severity
+                )
+
+                st.write("Nivel de confianza del resultado principal")
                 st.progress(float(confidence))
 
                 st.subheader("Interpretación")
                 st.info(description)
+
+                st.subheader("Detecciones del modelo")
+
+                if len(detections) == 0:
+                    st.warning(
+                        "El modelo no detectó imperfecciones con el umbral actual."
+                    )
+                else:
+                    st.write(
+                        f"Se detectaron **{len(detections)} zona(s)** en la imagen."
+                    )
+
+                    detection_summary = {}
+
+                    for detection in detections:
+                        class_name = detection["class"]
+
+                        if class_name not in detection_summary:
+                            detection_summary[class_name] = 0
+
+                        detection_summary[class_name] += 1
+
+                    st.write("Resumen por clase detectada:")
+
+                    for class_name, total in detection_summary.items():
+                        st.write(
+                            f"- **{get_display_name(class_name)}:** {total} detección(es)"
+                        )
+
+                    st.write("Detalle de detecciones:")
+
+                    for index, detection in enumerate(detections, start=1):
+                        detection_name = get_display_name(detection["class"])
+                        detection_confidence = detection["confidence"]
+
+                        st.write(
+                            f"**Zona {index}:** {detection_name} - "
+                            f"{detection_confidence * 100:.0f}%"
+                        )
+
+                        st.progress(float(detection_confidence))
 
                 st.subheader("Recomendaciones")
 
@@ -192,8 +257,11 @@ if page == "Analizar imagen":
                     []
                 )
 
-                for item in recommendations:
-                    st.write(f"✅ {item}")
+                if len(recommendations) == 0:
+                    st.write("No hay recomendaciones disponibles para este resultado.")
+                else:
+                    for item in recommendations:
+                        st.write(f"✅ {item}")
 
                 st.warning(
                     "Esta información es orientativa y no reemplaza una valoración médica profesional."
@@ -217,6 +285,8 @@ if page == "Historial":
         else:
             st.error("Debes marcar la confirmación antes de eliminar.")
 
+    st.divider()
+
     history = get_analysis_history()
 
     if len(history) == 0:
@@ -237,7 +307,7 @@ if page == "Historial":
                     st.warning("Imagen no disponible.")
 
             with col2:
-                st.write(f"**Condición detectada:** {predicted_class}")
+                st.write(f"**Resultado principal:** {get_display_name(predicted_class)}")
                 st.write(f"**Confianza:** {confidence * 100:.0f}%")
                 st.write(f"**Severidad:** {severity}")
                 st.write(f"**Interpretación:** {description}")
@@ -275,20 +345,30 @@ if page == "Estadísticas":
 
         col1.metric("Total análisis", total_analysis)
         col2.metric("Confianza promedio", f"{avg_confidence * 100:.0f}%")
-        col3.metric("Clase más frecuente", most_common_class)
+        col3.metric("Clase más frecuente", get_display_name(most_common_class))
 
-        st.subheader("Distribución de clases detectadas")
-        class_counts = df["predicted_class"].value_counts()
+        st.subheader("Distribución de resultados principales")
+
+        class_counts = df["predicted_class"].apply(get_display_name).value_counts()
+
         st.bar_chart(class_counts)
 
         st.subheader("Distribución por severidad")
+
         severity_counts = df["severity"].value_counts()
+
         st.bar_chart(severity_counts)
 
         st.subheader("Tabla de análisis")
 
+        df_display = df.copy()
+        df_display["predicted_class"] = df_display["predicted_class"].apply(get_display_name)
+        df_display["confidence"] = df_display["confidence"].apply(
+            lambda x: f"{x * 100:.0f}%"
+        )
+
         st.dataframe(
-            df[
+            df_display[
                 [
                     "id",
                     "analysis_date",
