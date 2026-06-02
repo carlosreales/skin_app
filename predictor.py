@@ -11,10 +11,15 @@ def load_model():
     return model
 
 
-def predict(image):
+def predict(image, conf_threshold=0.15, iou_threshold=0.45):
     model = load_model()
 
-    results = model(image)
+    results = model.predict(
+        source=image,
+        conf=conf_threshold,
+        iou=iou_threshold,
+        verbose=False
+    )
 
     detections = []
 

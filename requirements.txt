@@ -7,4 +7,5 @@ ultralytics
 torch
 torchvision
 cloudinary
+groq
 
