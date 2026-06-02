@@ -1,5 +1,4 @@
 from ultralytics import YOLO
-import numpy as np
 import streamlit as st
 
 
@@ -15,44 +14,37 @@ def load_model():
 def predict(image):
     model = load_model()
 
-    image_array = np.array(image.convert("RGB"))
-
-    results = model.predict(
-        source=image_array,
-        conf=0.15,
-        imgsz=640,
-        verbose=False
-    )
-
-    result = results[0]
+    results = model(image)
 
     detections = []
 
-    if result.boxes is not None and len(result.boxes) > 0:
+    for result in results:
         for box in result.boxes:
-            class_id = int(box.cls[0])
+            cls_id = int(box.cls[0])
             confidence = float(box.conf[0])
-            class_name = model.names[class_id]
+            x1, y1, x2, y2 = box.xyxy[0].tolist()
+
+            class_name = model.names[cls_id]
 
             detections.append({
+                "class_id": cls_id,
                 "class": class_name,
-                "confidence": confidence
+                "class_name": class_name,
+                "confidence": confidence,
+                "box": [x1, y1, x2, y2]
             })
 
     if len(detections) == 0:
         return {
             "class": "Sin detección",
-            "confidence": 0.0,
+            "confidence": 0,
             "detections": []
         }
 
-    detections = sorted(
+    best_detection = max(
         detections,
-        key=lambda item: item["confidence"],
-        reverse=True
+        key=lambda item: item["confidence"]
     )
-
-    best_detection = detections[0]
 
     return {
         "class": best_detection["class"],

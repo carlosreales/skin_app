@@ -3,8 +3,9 @@ from PIL import Image
 import os
 from datetime import datetime
 import pandas as pd
-from cloud_storage import upload_image_to_cloudinary, delete_image_from_cloudinary
 
+from cloud_storage import upload_image_to_cloudinary, delete_image_from_cloudinary
+from image_utils import draw_detections
 from predictor import predict
 from recommendations import RECOMMENDATIONS
 from database import create_tables, save_analysis, get_analysis_history, delete_all_analysis
@@ -94,6 +95,7 @@ if page == "Analizar imagen":
 
     if option == "Tomar foto con cámara":
         camera_image = st.camera_input("Toma una foto de tu rostro")
+
         if camera_image is not None:
             image = Image.open(camera_image)
 
@@ -102,20 +104,42 @@ if page == "Analizar imagen":
             "Sube una imagen del rostro",
             type=["jpg", "jpeg", "png"]
         )
+
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
 
     if image is not None:
-        st.image(image, caption="Imagen seleccionada", use_container_width=True)
+        image = image.convert("RGB")
+
+        st.image(
+            image,
+            caption="Imagen seleccionada",
+            use_container_width=True
+        )
 
         if st.button("Analizar imagen"):
-
-            image = image.convert("RGB")
 
             if not detect_face(image):
                 st.error("No se detectó un rostro en la imagen.")
 
             else:
+                os.makedirs("uploads", exist_ok=True)
+
+                image_filename = (
+                    datetime.now().strftime("%Y%m%d_%H%M%S")
+                    + ".jpg"
+                )
+
+                image_path = os.path.join(
+                    "uploads",
+                    image_filename
+                )
+
+                image.save(
+                    image_path,
+                    "JPEG"
+                )
+
                 result = predict(image)
 
                 predicted_class = result["class"]
@@ -129,23 +153,18 @@ if page == "Analizar imagen":
                     "No hay descripción disponible."
                 )
 
-                os.makedirs("uploads", exist_ok=True)
+                annotated_image = None
 
-                image_filename = (
-                    datetime.now().strftime("%Y%m%d_%H%M%S")
-                    + ".jpg"
-                )
+                valid_detections = []
 
-                image_path = os.path.join(
-                    "uploads",
-                    image_filename
-                )
+                for detection in detections:
+                    if "box" in detection:
+                        valid_detections.append(detection)
 
-                image_to_save = image.convert("RGB")
-
-                image_to_save.save(
-                    image_path,
-                    "JPEG"
+                if len(valid_detections) > 0:
+                    annotated_image = draw_detections(
+                    image,
+                    valid_detections
                 )
 
                 cloudinary_result = upload_image_to_cloudinary(image_path)
@@ -213,6 +232,28 @@ if page == "Analizar imagen":
                 st.write("Nivel de confianza del resultado principal")
                 st.progress(float(confidence))
 
+                st.subheader("Imagen analizada")
+
+                if annotated_image is not None:
+                    col_original, col_annotated = st.columns(2)
+
+                    with col_original:
+                        st.write("Imagen original")
+                        st.image(
+                            image,
+                            use_container_width=True
+                        )
+
+                    with col_annotated:
+                        st.write("Imagen con detecciones")
+                        st.image(
+                            annotated_image,
+                            use_container_width=True
+                        )
+
+                else:
+                    st.info("No hay detecciones con coordenadas válidas para dibujar.")
+
                 st.subheader("Interpretación")
                 st.info(description)
 
@@ -222,6 +263,7 @@ if page == "Analizar imagen":
                     st.warning(
                         "El modelo no detectó imperfecciones con el umbral actual."
                     )
+
                 else:
                     st.write(
                         f"Se detectaron **{len(detections)} zona(s)** en la imagen."
@@ -266,6 +308,7 @@ if page == "Analizar imagen":
 
                 if len(recommendations) == 0:
                     st.write("No hay recomendaciones disponibles para este resultado.")
+
                 else:
                     for item in recommendations:
                         st.write(f"✅ {item}")
@@ -297,7 +340,10 @@ if page == "Historial":
             delete_all_analysis()
             delete_uploads_folder()
 
-            st.success("Historial, imágenes locales e imágenes de Cloudinary eliminados correctamente.")
+            st.success(
+                "Historial, imágenes locales e imágenes de Cloudinary eliminados correctamente."
+            )
+
             st.rerun()
 
         else:
@@ -309,9 +355,19 @@ if page == "Historial":
 
     if len(history) == 0:
         st.write("Todavía no hay análisis guardados.")
+
     else:
         for row in history:
-            analysis_id, analysis_date, predicted_class, confidence, image_path, severity, description, cloudinary_public_id = row
+            (
+                analysis_id,
+                analysis_date,
+                predicted_class,
+                confidence,
+                image_path,
+                severity,
+                description,
+                cloudinary_public_id
+            ) = row
 
             st.write(f"### Análisis #{analysis_id}")
             st.write(f"**Fecha:** {analysis_date}")
@@ -341,6 +397,7 @@ if page == "Estadísticas":
 
     if len(history) == 0:
         st.write("No hay datos suficientes para mostrar estadísticas.")
+
     else:
         df = pd.DataFrame(
             history,
@@ -381,7 +438,11 @@ if page == "Estadísticas":
         st.subheader("Tabla de análisis")
 
         df_display = df.copy()
-        df_display["predicted_class"] = df_display["predicted_class"].apply(get_display_name)
+
+        df_display["predicted_class"] = df_display["predicted_class"].apply(
+            get_display_name
+        )
+
         df_display["confidence"] = df_display["confidence"].apply(
             lambda x: f"{x * 100:.0f}%"
         )
