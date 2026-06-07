@@ -21,7 +21,8 @@ El sistema detecta 7 condiciones de piel a partir de una imagen o cámara web y 
 - [Decisiones tomadas durante el proyecto](#decisiones-tomadas-durante-el-proyecto)
 - [Clases detectadas](#clases-detectadas)
 - [Datasets utilizados](#datasets-utilizados)
-
+- [Limitaciones]
+- [Líneas Futuras de Trabajo]
 ---
 
 ## Requisitos del sistema
@@ -299,3 +300,24 @@ Copiar a `models/dermavision_best_v3.pt`.
 | darkspot | [Roboflow](https://universe.roboflow.com/skinanalysisv22025/darkspot-jpnki) | darkspot |
 | redness | [Roboflow](https://universe.roboflow.com/test-itme1/redness-7qf1p) | skin redness (eliminada en entrenamiento) |
 
+---
+
+###  Limitaciones
+
+* El rendimiento depende de la calidad de la imagen y las condiciones de iluminación.
+* El sistema únicamente puede detectar las condiciones incluidas en el conjunto de entrenamiento.
+* Las recomendaciones generadas tienen carácter informativo.
+* No sustituye la evaluación realizada por un dermatólogo u otro profesional sanitario.
+* La precisión del modelo puede variar según las características de los datos utilizados.
+
+---
+
+### Líneas Futuras de Trabajo
+
+* Ampliar el dataset con más condiciones dermatológicas.
+* Incorporar imágenes de diferentes tonos y tipos de piel para mejorar la generalización.
+* Validar el sistema con profesionales dermatológicos.
+* Implementar una aplicación móvil.
+* Mejorar el sistema de recomendaciones mediante modelos de IA generativa.
+* Incorporar seguimiento temporal de la evolución de la piel.
+* Añadir soporte multilingüe.
