@@ -185,7 +185,15 @@ El dataset final en `data/clean/` tiene aproximadamente **44.000 imágenes** en 
 ---
 ### Notebook 03 — Viola Jones
 
+El objetivo principal en este notebook consiste en realizar una detección del rostro mediante técnicas tradicionales de procesamiento de imágenes para, posteriormente, optimizar y entrenar un modelo de aprendizaje profundo basado en YOLOv8 enfocado en la detección de lesiones cutáneas.
 
+#### Qué hace el notebook?
+1. Detección y Recorte Facial (Viola-Jones): Utiliza los clasificadores de cascada Haar de OpenCV para localizar el rostro en la imagen original. Al aplicar un recorte con padding (margen) y redimensionar el área de estudio, se reduce el ruido del fondo, optimizando el foco únicamente en el contorno y características faciales donde aparecen imperfecciones.
+2. Reescalado de Etiquetas (Bboxes): Se transforman y normalizan las coordenadas de las cajas de detección originales (bounding boxes) al nuevo sistema de coordenadas del fragmento recortado.
+3. Copy paste augmentation: Para mitigar el desbalance de clases y mejorar la robustez del modelo, se implementa una técnica de Copy-Paste. Consiste en extraer imperfecciones o lesiones cutáneas de imágenes del dataset e "inyectarlas" de forma aleatoria (pero controlada) en los rostros recortados de otras imágenes, actualizando dinámicamente sus respectivas etiquetas YOLO.
+4. Entrenamiento con YOLOv8 (Ultralytics): Se configura y ejecuta un modelo de detección de objetos adaptado localmente para clasificar y localizar 9 tipos distintos de características o afecciones cutáneas.
+
+El dataset final se almacena como `clean-vj/´
 ---
 ### Notebook 04 — Entrenamiento en Kaggle
 
