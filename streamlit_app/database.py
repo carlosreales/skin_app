@@ -1,12 +1,14 @@
 import sqlite3
 from datetime import datetime
+from pathlib import Path
 
 
-DB_NAME = "skin_ai.db"
+BASE_DIR = Path(__file__).resolve().parent
+DB_PATH = BASE_DIR / "skin_ai.db"
 
 
 def get_connection():
-    connection = sqlite3.connect(DB_NAME)
+    connection = sqlite3.connect(str(DB_PATH))
     return connection
 
 

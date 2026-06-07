@@ -2,12 +2,15 @@ from ultralytics import YOLO
 import streamlit as st
 
 
-MODEL_PATH = "models/dermavision_best_v3.pt"
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "models" / "dermavision_best_v3.pt"
 
 
 @st.cache_resource
 def load_model():
-    model = YOLO(MODEL_PATH)
+    model = YOLO(str(MODEL_PATH))
     return model
 
 

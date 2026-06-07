@@ -1,3 +1,4 @@
+from pathlib import Path
 import streamlit as st
 from PIL import Image
 import os
@@ -13,6 +14,10 @@ from database import create_tables, save_analysis, get_analysis_history, delete_
 from face_detector import analyze_face_position
 from offline_recommendations import OFFLINE_RECOMMENDATIONS
 from ai_recommendations import get_ai_recommendations
+
+
+BASE_DIR = Path(__file__).resolve().parent
+UPLOADS_DIR = BASE_DIR / "uploads"
 
 
 DESCRIPTIONS = {
@@ -54,12 +59,10 @@ def get_display_name(predicted_class):
 
 
 def delete_uploads_folder():
-    if os.path.exists("uploads"):
-        for filename in os.listdir("uploads"):
-            file_path = os.path.join("uploads", filename)
-
-            if os.path.isfile(file_path):
-                os.remove(file_path)
+    if UPLOADS_DIR.exists():
+        for file_path in UPLOADS_DIR.iterdir():
+            if file_path.is_file():
+                file_path.unlink()
 
 
 st.set_page_config(
@@ -211,17 +214,14 @@ if page == "Analizar imagen":
                 else:
                     st.error(face_analysis["message"])
 
-                os.makedirs("uploads", exist_ok=True)
+                UPLOADS_DIR.mkdir(exist_ok=True)
 
                 image_filename = (
                     datetime.now().strftime("%Y%m%d_%H%M%S")
                     + ".jpg"
                 )
 
-                image_path = os.path.join(
-                    "uploads",
-                    image_filename
-                )
+                image_path = UPLOADS_DIR / image_filename
 
                 image.save(
                     image_path,
@@ -480,11 +480,16 @@ if page == "Guía de recomendaciones":
 
         for product in recommendation["products"]:
 
-            st.image(
-                product["image"],
-                caption=product["name"],
-                use_container_width=True
-            )
+            image_path = BASE_DIR / product["image"]
+
+            if image_path.exists():
+                st.image(
+                    str(image_path),
+                    caption=product["name"],
+                    use_container_width=True
+                )
+            else:
+                st.warning(f"No se encontró la imagen: {image_path}")
 
             st.markdown(f"### {product['name']}")
             st.write(f"**Marca:** {product['brand']}")
