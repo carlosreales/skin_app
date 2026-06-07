@@ -1,8 +1,8 @@
-# Skin AI Demo
+# SkinDo
 
 ## Descripción del Proyecto
 
-Skin AI Demo es una aplicación web desarrollada en Python y Streamlit para el análisis de imágenes faciales mediante técnicas de Procesamiento de Imágenes e Inteligencia Artificial.
+SkinDo es una aplicación web desarrollada en Python y Streamlit para el análisis de imágenes faciales mediante técnicas de Procesamiento de Imágenes e Inteligencia Artificial.
 
 La aplicación permite capturar o cargar fotografías del rostro, validar la presencia y calidad de la captura facial mediante OpenCV y detectar imperfecciones cutáneas utilizando un modelo YOLO entrenado previamente.
 
