@@ -21,8 +21,8 @@ El sistema detecta 7 condiciones de piel a partir de una imagen o cámara web y 
 - [Decisiones tomadas durante el proyecto](#decisiones-tomadas-durante-el-proyecto)
 - [Clases detectadas](#clases-detectadas)
 - [Datasets utilizados](#datasets-utilizados)
-- [Limitaciones]
-- [Líneas Futuras de Trabajo]
+- [Limitaciones](#limitaciones)
+- [Líneas Futuras de Trabajo](#líneas-futuras-de-trabajo)
 ---
 
 ## Requisitos del sistema
