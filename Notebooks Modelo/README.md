@@ -15,7 +15,7 @@ El sistema detecta 7 condiciones de piel a partir de una imagen o cámara web y 
 - [Ejecución paso a paso](#ejecución-paso-a-paso)
   - [Notebook 01 — EDA](#notebook-01--eda)
   - [Notebook 02 — Preparación del dataset](#notebook-02--preparación-del-dataset)
-  - [Notebook 03 — Viola Jones](#notebook-03--violajones-training)
+  - [Notebook 03 — Viola Jones](#notebook-03--viola-jones)
   - [Notebook 04 — Entrenamiento en Kaggle](#notebook-04--entrenamiento-en-kaggle)
   - [App Streamlit — Demo](#app-streamlit--demo)
 - [Decisiones tomadas durante el proyecto](#decisiones-tomadas-durante-el-proyecto)
