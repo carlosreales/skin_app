@@ -1,325 +1,106 @@
-# SkinDo
+# SKINDO
+## Sistema de Detección de Imperfecciones Faciales mediante Inteligencia Artificial
 
-## Descripción del Proyecto
+### Descripción General del Proyecto
 
-SkinDo es una aplicación web desarrollada en Python y Streamlit para el análisis de imágenes faciales mediante técnicas de Procesamiento de Imágenes e Inteligencia Artificial.
+**SkinDo** es una aplicación web desarrollada con Inteligencia Artificial capaz de analizar imágenes faciales y detectar diferentes imperfecciones visibles de la piel mediante técnicas de **Visión por Computador** y **Deep Learning**.
 
-La aplicación permite capturar o cargar fotografías del rostro, validar la presencia y calidad de la captura facial mediante OpenCV y detectar imperfecciones cutáneas utilizando un modelo YOLO entrenado previamente.
+La aplicación permite al usuario capturar una fotografía de su rostro o cargar una imagen desde su dispositivo. Posteriormente, la imagen es procesada por un modelo de aprendizaje profundo entrenado para reconocer distintas condiciones de la piel. Finalmente, el sistema genera recomendaciones orientativas relacionadas con los resultados obtenidos.
 
-Además, el sistema ofrece recomendaciones de cuidado facial, historial de análisis, estadísticas básicas y almacenamiento seguro de imágenes en la nube.
-
----
-
-# Objetivos
-
-## Objetivo General
-
-Desarrollar una aplicación web capaz de detectar imperfecciones faciales utilizando técnicas de visión por computador e inteligencia artificial.
-
-## Objetivos Específicos
-
-* Detectar automáticamente la presencia de un rostro en una imagen.
-* Analizar imperfecciones faciales mediante un modelo YOLO.
-* Visualizar las zonas detectadas sobre la imagen.
-* Almacenar resultados de análisis para futuras consultas.
-* Generar recomendaciones de cuidado facial.
-* Presentar estadísticas básicas de uso y detección.
+> **Importante:** SkinDo es una herramienta de apoyo y no pretende reemplazar el diagnóstico ni la evaluación realizada por profesionales de la salud. Antes de una implementación real, la herramienta debería ser validada con el acompañamiento de dermatólogos u otros especialistas.
 
 ---
 
-# Tecnologías Utilizadas
+###  Objetivo General
 
-## Backend
+Desarrollar una aplicación inteligente capaz de detectar diferentes imperfecciones faciales mediante análisis de imágenes y proporcionar recomendaciones generales para el cuidado de la piel.
 
-* Python 3.x
+---
+
+### Objetivos Específicos
+
+* Capturar imágenes faciales desde una cámara o mediante carga de archivos.
+* Detectar automáticamente la presencia de un rostro válido.
+* Clasificar diferentes condiciones visibles de la piel.
+* Mostrar recomendaciones asociadas a cada condición detectada.
+* Almacenar resultados e historial de análisis.
+* Construir una interfaz accesible para usuarios sin conocimientos técnicos.
+
+---
+
+### Utilidad del Proyecto
+
+La aplicación puede utilizarse como una herramienta de apoyo para:
+
+* Monitoreo básico del estado de la piel.
+* Clínicas de estética y centros de belleza como herramienta de primera consulta.
+* Farmacias y tiendas cosméticas para recomendar productos según las necesidades del cliente.
+* Seguimiento de tratamientos cosméticos.
+* Investigación y aprendizaje en áreas relacionadas con Inteligencia Artificial y Visión por Computador.
+
+---
+
+###  Estructura del Repositorio
+
+#### 📂 Notebooks modelos
+
+Esta carpeta contiene todos los notebooks utilizados durante el desarrollo del modelo de Inteligencia Artificial.
+
+Los notebooks incluyen el flujo completo de trabajo:
+
+* Análisis Exploratorio de Datos (EDA).
+* Limpieza y preprocesamiento de imágenes.
+* Preparación y organización del dataset.
+* Aumento de datos (*Data Augmentation*).
+* Entrenamiento del modelo YOLOv8.
+* Evaluación de resultados.
+* Experimentos y ajustes de hiperparámetros.
+
+Siguiendo los notebooks es posible reproducir todo el proceso de desarrollo del modelo, desde el análisis inicial de los datos hasta el entrenamiento final de YOLOv8.
+
+---
+
+#### 📂 Streamlit app
+
+Esta carpeta contiene todos los archivos `.py` necesarios para desarrollar y ejecutar la aplicación web **SkinDo**.
+
+Entre sus componentes se incluyen:
+
+* Interfaz gráfica desarrollada con Streamlit.
+* Carga de imágenes desde el dispositivo.
+* Captura de imágenes mediante cámara.
+* Integración del modelo YOLOv8 para inferencia.
+* Generación de recomendaciones.
+* Visualización de resultados.
+* Gestión del historial de análisis.
+
+Los archivos contienen las indicaciones necesarias para comprender el funcionamiento y despliegue de la aplicación.
+
+---
+
+### Tecnologías Utilizadas
+
+* Python
 * Streamlit
-
-## Procesamiento de Imágenes
-
+* YOLOv8
+* Ultralytics
 * OpenCV
-* Pillow (PIL)
-
-## Inteligencia Artificial
-
-* Ultralytics YOLO
-* Modelo personalizado: `dermavision_best_v3.pt`
-
-## Base de Datos
-
-* SQLite
-
-## Almacenamiento en la Nube
-
-* Cloudinary
-
-## Control de Versiones
-
-* Git
-* GitHub
-
-## IA Generativa (Experimental)
-
-* Groq API
-* Llama 3
+* NumPy
+* Pandas
+* Pillow
+* Deep Learning
+* Computer Vision
 
 ---
 
-# Arquitectura General
+### Licencia
 
-Usuario
+Este proyecto ha sido desarrollado con fines educativos, de investigación y demostración tecnológica.
 
-↓
-
-Captura o carga imagen
-
-↓
-
-Validación facial (OpenCV Haar Cascade)
-
-↓
-
-Detección de imperfecciones (YOLO)
-
-↓
-
-Visualización de resultados
-
-↓
-
-Almacenamiento
-
-* SQLite
-* Cloudinary
-
-↓
-
-Recomendaciones
-
-* Offline
-* IA (Groq)
-
-↓
-
-Historial y estadísticas
+Antes de utilizarlo en entornos reales o comerciales, se recomienda realizar validaciones adicionales y verificar las licencias de los datasets y herramientas utilizadas.
 
 ---
 
-# Clases Detectadas por el Modelo
+###  Autores
 
-El modelo actual permite detectar las siguientes categorías:
-
-| ID | Clase       |
-| -- | ----------- |
-| 0  | Acne        |
-| 1  | Dark Circle |
-| 2  | Darkspot    |
-| 3  | Dry         |
-| 4  | Normal Skin |
-| 5  | Oily        |
-| 6  | Wrinkle     |
-
----
-
-# Funcionalidades Implementadas
-
-## 1. Captura de Imágenes
-
-La aplicación permite:
-
-* Tomar fotografías mediante la cámara del dispositivo.
-* Subir imágenes existentes.
-* Soporte para formatos:
-
-  * JPG
-  * JPEG
-  * PNG
-
----
-
-## 2. Guía Visual para Captura
-
-Se implementó una guía visual sobre el componente de cámara para ayudar al usuario a posicionar correctamente el rostro antes de realizar la captura.
-
----
-
-## 3. Validación de Rostro
-
-Antes de ejecutar el modelo YOLO:
-
-* Se verifica la presencia de un rostro.
-* Se analiza la calidad de la captura.
-* Se valida el centrado del rostro.
-
-Tecnología utilizada:
-
-* OpenCV Haar Cascade
-
----
-
-## 4. Detección de Imperfecciones
-
-La detección se realiza mediante un modelo YOLO personalizado.
-
-Características:
-
-* Detección de múltiples zonas.
-* Selección automática de la detección con mayor confianza.
-* Visualización mediante bounding boxes.
-* Visualización del porcentaje de confianza.
-
----
-
-## 5. Configuración del Modelo
-
-El usuario puede configurar:
-
-### Umbral de Confianza
-
-Permite definir la confianza mínima requerida para mostrar detecciones.
-
-Valor inicial:
-
-0.10
-
-Nota:
-
-Debido a las limitaciones actuales del modelo, valores superiores a 0.50 reducen considerablemente la cantidad de detecciones obtenidas.
-
-### Umbral IoU
-
-Permite controlar el nivel de solapamiento permitido entre detecciones.
-
-Valor recomendado:
-
-0.45
-
----
-
-## 6. Recomendaciones Offline
-
-La aplicación incluye una guía integrada de cuidado facial organizada por tipo de imperfección.
-
-Cada categoría incluye:
-
-* Descripción
-* Cuidados sugeridos
-* Productos recomendados
-* Imagen del producto
-* Precio aproximado
-* Enlace de compra
-
----
-
-## 7. Recomendaciones Inteligentes (Experimental)
-
-Se encuentra en desarrollo la integración con Groq y modelos LLM para generar:
-
-* Rutinas personalizadas
-* Consejos de cuidado facial
-* Explicaciones contextualizadas
-
----
-
-## 8. Historial de Análisis
-
-Se almacena información de cada análisis:
-
-* Fecha
-* Resultado
-* Confianza
-* Severidad
-* Imagen asociada
-
-El historial permite:
-
-* Consultar análisis anteriores
-* Visualizar imágenes almacenadas
-* Eliminar registros
-
----
-
-## 9. Estadísticas
-
-La aplicación incluye un módulo estadístico básico que muestra:
-
-* Total de análisis realizados
-* Confianza promedio
-* Clase más frecuente
-* Distribución de clases
-* Distribución por severidad
-
----
-
-## 10. Almacenamiento
-
-### SQLite
-
-Almacena:
-
-* Resultados
-* Fechas
-* Confianza
-* Descripciones
-* Referencias de imágenes
-
-### Cloudinary
-
-Almacena:
-
-* Imágenes originales
-* Recursos asociados al análisis
-
-Ventajas:
-
-* Persistencia de imágenes
-* Acceso desde Streamlit Cloud
-* Eliminación remota de archivos
-
----
-
-# Estructura del Proyecto
-
-```text
-skin_app/
-│
-├── app.py
-├── predictor.py
-├── face_detector.py
-├── image_utils.py
-├── recommendations.py
-├── offline_recommendations.py
-├── ai_recommendations.py
-├── cloud_storage.py
-├── database.py
-│
-├── models/
-│   └── dermavision_best_v3.pt
-│
-├── assets/
-│   └── products/
-│
-├── uploads/
-│
-├── skin_analysis.db
-│
-├── requirements.txt
-└── README.md
-```
-
-# Próximas Mejoras
-
-* Exportación de informes PDF.
-* Dashboard avanzado.
-* Integración completa con Groq.
-* Migración de SQLite a Supabase.
-* Mejora de la precisión del modelo.
-* Comparación de análisis históricos.
-* Sistema de autenticación de usuarios.
-
-# Autor
-
-Proyecto académico desarrollado para la asignatura de Procesamiento de Imágenes.
-
-Tecnologías principales:
-
-Python • Streamlit • OpenCV • YOLO • SQLite • Cloudinary • Groq
+Proyecto desarrollado por Carlos Reales y Leslie Mosquera como parte de un trabajo académico enfocado en la aplicación de técnicas de Inteligencia Artificial y Visión por Computador para el análisis automático de la piel.
